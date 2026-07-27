@@ -17,20 +17,39 @@
      through the clouds) pun taken literally as an immersive dark atmosphere,
      rather than a brochure that merely alternates light/dark tokens. */
   :root{
-    --ink:#f2ecdd;
-    --ink-soft:#c7c2d9;
-    --parchment:#0a0c1c;
-    --parchment-2:#141833;
-    --cognac:#e2a866;
-    --cognac-strong:#f3cd94;
-    --oxblood:#ea94ab;
-    --mist:#9d99b8;
-    --line:rgba(242,236,221,.14);
-    --card:rgba(255,255,255,.05);
-    --card-border:rgba(255,255,255,.11);
-    --shadow:0 24px 60px -24px rgba(0,0,0,.6);
-    --ghost:rgba(242,236,221,.05);
-    --glass-blur:18px;
+    --ink:#1b2340;
+    --ink-soft:#454b6e;
+    --parchment:#f6f0e3;
+    --parchment-2:#ece1cb;
+    --cognac:#a8672f;
+    --cognac-strong:#8a5424;
+    --oxblood:#6e2a34;
+    --mist:#6b6f85;
+    --line:rgba(27,35,64,.13);
+    --card:rgba(255,255,255,.55);
+    --card-border:rgba(27,35,64,.11);
+    --shadow:0 20px 50px -26px rgba(27,35,64,.22);
+    --ghost:rgba(27,35,64,.05);
+    --glass-blur:16px;
+    --glow-1:rgba(168,103,47,.16);
+    --glow-2:rgba(110,42,52,.09);
+    --glow-mid:rgba(90,70,140,.07);
+  }
+  :root[data-theme="dark"]{
+    --ink:#f2ecdd; --ink-soft:#c7c2d9; --parchment:#0a0c1c; --parchment-2:#141833;
+    --cognac:#e2a866; --cognac-strong:#f3cd94; --oxblood:#ea94ab; --mist:#9d99b8;
+    --line:rgba(242,236,221,.14); --card:rgba(255,255,255,.05); --card-border:rgba(255,255,255,.11);
+    --shadow:0 24px 60px -24px rgba(0,0,0,.6); --ghost:rgba(242,236,221,.05);
+    --glow-1:rgba(226,168,102,.32); --glow-2:rgba(234,148,171,.22); --glow-mid:rgba(120,120,200,.14);
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --ink:#f2ecdd; --ink-soft:#c7c2d9; --parchment:#0a0c1c; --parchment-2:#141833;
+      --cognac:#e2a866; --cognac-strong:#f3cd94; --oxblood:#ea94ab; --mist:#9d99b8;
+      --line:rgba(242,236,221,.14); --card:rgba(255,255,255,.05); --card-border:rgba(255,255,255,.11);
+      --shadow:0 24px 60px -24px rgba(0,0,0,.6); --ghost:rgba(242,236,221,.05);
+      --glow-1:rgba(226,168,102,.32); --glow-2:rgba(234,148,171,.22); --glow-mid:rgba(120,120,200,.14);
+    }
   }
 
   *{ box-sizing:border-box; }
@@ -48,7 +67,7 @@
 
   .progress{ position:fixed; top:0; left:0; height:2px; background:linear-gradient(90deg,var(--cognac),var(--oxblood)); z-index:50; width:0%; transition:width .1s linear; box-shadow:0 0 12px var(--cognac); }
 
-  /* ---------------- atmosphere: aurora glow, fixed behind all content ---------------- */
+  /* ---------------- atmosphere: warm glow + faint data-grid, fixed behind all content ---------------- */
   .atmosphere{ position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none; }
   .atmosphere::before, .atmosphere::after{
     content:""; position:absolute; border-radius:50%; filter:blur(80px);
@@ -56,16 +75,23 @@
   }
   .atmosphere::before{
     width:56vw; height:56vw; top:-18vw; right:-14vw;
-    background:radial-gradient(circle, rgba(226,168,102,.32), rgba(226,168,102,0) 68%);
+    background:radial-gradient(circle, var(--glow-1), rgba(0,0,0,0) 68%);
   }
   .atmosphere::after{
     width:50vw; height:50vw; bottom:-16vw; left:-12vw;
-    background:radial-gradient(circle, rgba(234,148,171,.22), rgba(234,148,171,0) 68%);
+    background:radial-gradient(circle, var(--glow-2), rgba(0,0,0,0) 68%);
   }
   .atmosphere .mid-glow{
     position:absolute; top:38%; left:50%; width:44vw; height:44vw; border-radius:50%;
-    background:radial-gradient(circle, rgba(120,120,200,.14), rgba(120,120,200,0) 70%);
+    background:radial-gradient(circle, var(--glow-mid), rgba(0,0,0,0) 70%);
     filter:blur(80px); transform:translate(-50%,-50%);
+  }
+  .atmosphere .grid{
+    position:absolute; inset:0; opacity:.5;
+    background-image:linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size:64px 64px;
+    -webkit-mask:radial-gradient(70% 60% at 50% 0%, #000 0%, transparent 72%);
+            mask:radial-gradient(70% 60% at 50% 0%, #000 0%, transparent 72%);
   }
   @media (prefers-reduced-motion:reduce){ .atmosphere::before, .atmosphere::after{ transition:none; } }
 
@@ -106,7 +132,26 @@
     font-size:min(22vw,300px); font-weight:800; color:var(--ghost);
     line-height:1; user-select:none; pointer-events:none; white-space:nowrap;
   }
-  .hero-eyebrow{ font-size:.8rem; letter-spacing:.3em; text-transform:uppercase; color:var(--mist); margin:0 0 22px; font-weight:600; }
+  /* a single scan sweep on load — a small, deliberately "smart system" cue */
+  .scan-line{
+    position:absolute; left:0; right:0; top:0; height:2px; z-index:2;
+    background:linear-gradient(90deg, transparent, var(--cognac-strong), transparent);
+    box-shadow:0 0 16px 1px var(--cognac-strong);
+    animation:scanSweep 2.4s cubic-bezier(.3,.6,.3,1) .15s 1 both;
+    opacity:0;
+  }
+  @keyframes scanSweep{
+    0%{ top:0; opacity:0; }
+    8%{ opacity:.9; }
+    92%{ opacity:.55; }
+    100%{ top:100%; opacity:0; }
+  }
+  @media (prefers-reduced-motion:reduce){ .scan-line{ display:none; } }
+
+  .hero-eyebrow{ font-size:.8rem; letter-spacing:.3em; text-transform:uppercase; color:var(--mist); margin:0 0 22px; font-weight:600; min-height:1.4em; }
+  .hero-eyebrow .caret{ display:inline-block; width:1px; height:.9em; background:var(--cognac); margin-left:2px; vertical-align:-.1em; animation:caretBlink .8s steps(1) infinite; }
+  .hero-eyebrow .caret.done{ animation:none; opacity:0; }
+  @keyframes caretBlink{ 50%{ opacity:0; } }
   h1.hero-title{
     font-size:clamp(2.6rem,7.4vw,5.4rem); font-weight:800; margin:0 0 26px;
     line-height:1.14; letter-spacing:.005em; text-wrap:balance;
@@ -142,7 +187,23 @@
   .hero-shoe .float{ animation:shoeFloat 5s ease-in-out infinite; animation-delay:1.4s; }
   @keyframes shoeFloat{ 0%,100%{ transform:translateY(0);} 50%{ transform:translateY(-10px);} }
   @media (prefers-reduced-motion:reduce){ .hero-shoe{ opacity:1; transform:none; animation:none; } .hero-shoe .float{ animation:none; } }
-  .hero-shoe svg{ width:100%; height:auto; display:block; position:relative; }
+  .hero-shoe svg{ width:100%; height:auto; display:block; position:relative; overflow:visible; }
+
+  /* the shoe draws itself, like a machine sketching it */
+  .hero-shoe .draw{
+    stroke-dasharray:var(--len,600); stroke-dashoffset:var(--len,600);
+    animation:drawPath 1.5s cubic-bezier(.4,.5,.2,1) forwards;
+  }
+  .hero-shoe .draw.d-2{ animation-delay:.9s; }
+  .hero-shoe .draw.d-3{ animation-delay:1.25s; }
+  .hero-shoe .draw.d-4{ animation-delay:1.05s; }
+  @keyframes drawPath{ to{ stroke-dashoffset:0; } }
+  .hero-shoe .pop{ opacity:0; animation:popIn .5s ease forwards; animation-delay:1.7s; }
+  @keyframes popIn{ to{ opacity:.5; } }
+  @media (prefers-reduced-motion:reduce){
+    .hero-shoe .draw{ stroke-dashoffset:0; animation:none; }
+    .hero-shoe .pop{ opacity:.5; animation:none; }
+  }
   @media (max-width:760px){ .hero-shoe{ display:none; } }
 
   /* ---------------- story / timeline ---------------- */
@@ -172,7 +233,14 @@
     backdrop-filter:blur(var(--glass-blur)); -webkit-backdrop-filter:blur(var(--glass-blur));
     transition:transform .35s cubic-bezier(.2,.7,.2,1), border-color .35s ease;
   }
-  .brand-card:hover{ transform:translateY(-4px); border-color:rgba(255,255,255,.22); }
+  /* cursor-tracked spotlight — the card "notices" the pointer */
+  .brand-card::before{
+    content:""; position:absolute; inset:0; pointer-events:none; opacity:0;
+    background:radial-gradient(280px circle at var(--mx,50%) var(--my,50%), var(--glow-1), transparent 62%);
+    transition:opacity .4s ease;
+  }
+  .brand-card:hover::before{ opacity:1; }
+  .brand-card:hover{ transform:translateY(-4px); border-color:var(--cognac); }
   .brand-card::after{ content:""; position:absolute; left:0; right:0; bottom:0; height:3px; }
   .brand-card.jiushi::after{ background:linear-gradient(90deg,var(--cognac),transparent); }
   .brand-card.jiunian::after{ background:linear-gradient(90deg,var(--oxblood),transparent); }
@@ -229,7 +297,7 @@
   .footer-copy{ font-size:.76rem; color:var(--mist); }
 </style>
 
-<div class="atmosphere" id="atmosphere"><div class="mid-glow"></div></div>
+<div class="atmosphere" id="atmosphere"><div class="grid"></div><div class="mid-glow"></div></div>
 <div class="progress" id="progress"></div>
 <div class="brandmark">青云 <span>QINGYUN</span></div>
 
@@ -237,22 +305,23 @@
 <div class="wrap">
 
   <section class="hero">
+    <div class="scan-line" aria-hidden="true"></div>
     <div class="hero-ghost">云</div>
 
     <div class="hero-shoe" aria-hidden="true">
       <svg class="float" viewBox="0 0 300 170" xmlns="http://www.w3.org/2000/svg">
-        <path d="M20 128 C11 116 12 100 27 90 C52 74 78 56 96 40 C104 33 112 30 121 33 C130 36 132 45 130 54 C160 50 190 52 216 62 C238 70 254 84 262 102 C266 111 265 120 258 126 C248 134 230 136 210 136 L36 136 C28 136 22 133 20 128 Z"
+        <path class="draw" d="M20 128 C11 116 12 100 27 90 C52 74 78 56 96 40 C104 33 112 30 121 33 C130 36 132 45 130 54 C160 50 190 52 216 62 C238 70 254 84 262 102 C266 111 265 120 258 126 C248 134 230 136 210 136 L36 136 C28 136 22 133 20 128 Z"
           fill="none" stroke="var(--ink)" stroke-width="3.2" stroke-linejoin="round"/>
-        <path d="M27 90 C44 98 66 100 90 96 C104 94 116 89 130 82" fill="none" stroke="var(--ink)" stroke-width="2.2" stroke-linecap="round" opacity=".55"/>
-        <path d="M96 62 L112 74 M114 58 L130 70 M132 55 L148 66" stroke="var(--oxblood)" stroke-width="2.6" stroke-linecap="round"/>
-        <path d="M22 130 C70 138 190 140 259 124" fill="none" stroke="var(--cognac)" stroke-width="6" stroke-linecap="round"/>
-        <circle cx="152" cy="62" r="2.6" fill="var(--ink)" opacity=".5"/>
-        <circle cx="168" cy="60" r="2.6" fill="var(--ink)" opacity=".5"/>
-        <circle cx="184" cy="60" r="2.6" fill="var(--ink)" opacity=".5"/>
+        <path class="draw d-2" d="M27 90 C44 98 66 100 90 96 C104 94 116 89 130 82" fill="none" stroke="var(--ink)" stroke-width="2.2" stroke-linecap="round" opacity=".55"/>
+        <path class="draw d-3" d="M96 62 L112 74 M114 58 L130 70 M132 55 L148 66" stroke="var(--oxblood)" stroke-width="2.6" stroke-linecap="round"/>
+        <path class="draw d-4" d="M22 130 C70 138 190 140 259 124" fill="none" stroke="var(--cognac)" stroke-width="6" stroke-linecap="round"/>
+        <circle class="pop" cx="152" cy="62" r="2.6" fill="var(--ink)" opacity=".5"/>
+        <circle class="pop" cx="168" cy="60" r="2.6" fill="var(--ink)" opacity=".5"/>
+        <circle class="pop" cx="184" cy="60" r="2.6" fill="var(--ink)" opacity=".5"/>
       </svg>
     </div>
 
-    <p class="hero-eyebrow load-in d1">孝感市青云鞋业有限责任公司 · 自 2002 年</p>
+    <p class="hero-eyebrow load-in d1" data-type="孝感市青云鞋业有限责任公司 · 自 2002 年"><span class="typed"></span><span class="caret"></span></p>
     <h1 class="hero-title load-in d2">路在脚下，<br><span class="glow">鞋在青云</span>。</h1>
     <p class="hero-sub load-in d3">二十余年只做一件事：把一双鞋的分寸做扎实。代理头部品牌，也做自己的鞋。</p>
     <div class="hero-scroll load-in d4"><span class="line"></span>向下浏览</div>
@@ -365,6 +434,46 @@
       atmosphere.style.setProperty("--px", px.toFixed(1) + "px");
       atmosphere.style.setProperty("--py", py.toFixed(1) + "px");
     }, { passive:true });
+  }
+
+  var prefersReduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // Give each stroke its true length so the draw-on ends exactly on the path.
+  document.querySelectorAll(".hero-shoe .draw").forEach(function(p){
+    try{
+      var len = Math.ceil(p.getTotalLength());
+      if(len) p.style.setProperty("--len", len);
+    }catch(e){ /* getTotalLength unsupported — CSS fallback length applies */ }
+  });
+
+  // Typewriter for the hero eyebrow.
+  var typeEl = document.querySelector(".hero-eyebrow");
+  if(typeEl){
+    var full = typeEl.getAttribute("data-type") || "";
+    var out = typeEl.querySelector(".typed");
+    var caret = typeEl.querySelector(".caret");
+    if(prefersReduced){
+      out.textContent = full;
+      if(caret) caret.classList.add("done");
+    } else {
+      var i = 0;
+      (function tick(){
+        out.textContent = full.slice(0, i);
+        if(i++ <= full.length) setTimeout(tick, 52);
+        else if(caret) setTimeout(function(){ caret.classList.add("done"); }, 900);
+      })();
+    }
+  }
+
+  // Cards track the cursor for a soft spotlight.
+  if(!prefersReduced){
+    document.querySelectorAll(".brand-card").forEach(function(card){
+      card.addEventListener("pointermove", function(e){
+        var r = card.getBoundingClientRect();
+        card.style.setProperty("--mx", (e.clientX - r.left) + "px");
+        card.style.setProperty("--my", (e.clientY - r.top) + "px");
+      }, { passive:true });
+    });
   }
 
   var bar = document.getElementById("progress");
